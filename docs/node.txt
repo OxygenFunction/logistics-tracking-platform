@@ -1,0 +1,3 @@
+create index
+CREATE INDEX idx_tracking_event_shipment
+ON tracking_event(shipment_id);
