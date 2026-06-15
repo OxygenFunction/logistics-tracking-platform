@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.database import conn
-from app.schemas import ShipmentCreate
+from app.schemas import ShipmentCreate, TrackingEventCreate
 
 app = FastAPI()
 
@@ -36,7 +36,8 @@ from app.services.shipment_service import (
     create_shipment
 )
 from app.services.tracking_service import (
-    get_tracking_events
+    get_tracking_events,
+    create_tracking_event
 )
 
 @app.get("/shipments")
@@ -58,3 +59,9 @@ def create_new_shipment(
 @app.get("/shipments/{shipment_id}/events")
 def get_events(shipment_id: int):
     return get_tracking_events(shipment_id)
+
+@app.post("/tracking-events")
+def create_event(
+    event: TrackingEventCreate
+):
+    return create_tracking_event(event)

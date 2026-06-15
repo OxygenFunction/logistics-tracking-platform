@@ -8,3 +8,9 @@ class ShipmentCreate(BaseModel):
     shipper_id: int
     carrier_id: int
     container_id: int
+
+class TrackingEventCreate(BaseModel):
+    shipment_id: int
+    event_type: str
+    location: str
+    description: str
