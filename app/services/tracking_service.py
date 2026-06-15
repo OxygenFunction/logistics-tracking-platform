@@ -1,6 +1,45 @@
 from app.database import conn
 from datetime import datetime
 
+VALID_TRANSITIONS = {
+    "CREATED": ["LOADED"],
+    "LOADED": ["DEPARTED"],
+    "DEPARTED": ["ARRIVED"],
+    "ARRIVED": ["CUSTOMS_CLEARED"],
+    "CUSTOMS_CLEARED": ["DELIVERED"],
+    "DELIVERED": []
+}
+
+def validate_transition(
+    current_status,
+    next_status
+):
+
+    allowed_statuses = VALID_TRANSITIONS.get(
+        current_status,
+        []
+    )
+
+    return next_status in allowed_statuses
+
+
+def get_shipment_status(shipment_id):
+
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT status
+        FROM shipment
+        WHERE id = %s
+        """,
+        (shipment_id,)
+    )
+    row = cur.fetchone()
+    cur.close()
+
+    return row[0]
+
+
 def get_tracking_events(shipment_id: int):
 
     cur = conn.cursor()
@@ -24,6 +63,20 @@ def get_tracking_events(shipment_id: int):
 
 def create_tracking_event(event):
 
+    current_status = get_shipment_status(
+        event.shipment_id
+    )
+    if not validate_transition(
+        current_status,
+        event.event_type
+    ):
+        return {
+            "error":
+            f"Invalid transition: "
+            f"{current_status} -> "
+            f"{event.event_type}"
+    }
+    
     cur = conn.cursor()
     cur.execute(
         """
